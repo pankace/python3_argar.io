@@ -1,11 +1,8 @@
 import pygame
 
+from config import BALL_RADIUS
 from pygame.surface import Surface
 from typing import Tuple
-
-
-# constants
-BALL_RADIUS = 5
 
 class Ball:
     def __init__(
@@ -18,5 +15,5 @@ class Ball:
         self.y = y
         self.color = color
 
-    def draw(self, window: Surface, radius: int) -> None:
-        pygame.draw.circle(window, self.color, (self.x, self.y), radius)
+    def draw(self, window: Surface) -> None:
+        pygame.draw.circle(window, self.color, (self.x, self.y), BALL_RADIUS)
