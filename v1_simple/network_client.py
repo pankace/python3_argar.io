@@ -2,7 +2,7 @@ import socket
 import pickle
 
 class NetworkClient:
-    def __init__(self, server="10.237.29.206", port=5555):
+    def __init__(self, server="127.0.0.1", port=5555):
         self.server = server
         self.port = port
         self.addr = (self.server, self.port)

@@ -5,16 +5,17 @@ import random
 import os
 from network_client import NetworkClient
 
-# Initialize Pygame
-pygame.font.init()
+from typing import Dict, Tuple
+from player import Player
+from network_client import NetworkClient
+
 
 # Constants
-PLAYER_RADIUS = 10
-START_VEL = 9
 BALL_RADIUS = 5
 W, H = 1600, 830
 
 # Fonts
+pygame.font.init()
 NAME_FONT = pygame.font.SysFont("comicsans", 20)
 TIME_FONT = pygame.font.SysFont("comicsans", 30)
 SCORE_FONT = pygame.font.SysFont("comicsans", 26)
@@ -40,7 +41,7 @@ def convert_time(t):
 
 def redraw_window(players, balls, game_time, score):
     WIN.fill((255, 255, 255))
-    
+
     for ball in balls:
         pygame.draw.circle(WIN, ball[2], (ball[0], ball[1]), BALL_RADIUS)
 
