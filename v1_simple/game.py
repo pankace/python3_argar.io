@@ -5,11 +5,11 @@ import random
 import os
 
 from player import Player, START_VEL
+from ball import Ball, BALL_RADIUS
 from network_client import NetworkClient
 
 
 # Constants
-BALL_RADIUS = 5
 W, H = 1600, 830
 
 # Fonts
@@ -46,9 +46,7 @@ def redraw_window(
     WIN.fill((255, 255, 255))
 
     for ball in balls:
-        pygame.draw.circle(WIN, ball[2], (ball[0], ball[1]), BALL_RADIUS)
-
-    # draw players
+        ball.draw(WIN, BALL_RADIUS)
     for player in players.values():
         player.draw(WIN)
 
@@ -69,7 +67,10 @@ def redraw_window(
 def main(name: str):
     server = NetworkClient()
     current_id = server.connect(name)
-    balls, players_data, game_time = server.send("get")
+    balls_data, players_data, game_time = server.send("get")
+
+    # ball objects
+    balls = [Ball(ball[0], ball[1], ball[2]) for ball in balls_data]
 
     # player objects
     players = {
@@ -93,9 +94,11 @@ def main(name: str):
         current_player.move(keys, vel)
 
         # update game states
-        balls, players_data, game_time = server.send(
+        balls_data, players_data, game_time = server.send(
             f"move {current_player.x} {current_player.y}"
         )
+        balls = [Ball(ball[0], ball[1], ball[2]) for ball in balls_data]
+
         players = {
             pid: Player(pid, pdata["x"],
                 pdata["y"],
