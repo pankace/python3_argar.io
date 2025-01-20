@@ -4,24 +4,36 @@ import pickle
 import time
 import random
 import math
+import netifaces # dynamic ip selection
+from config import PORT, START_RADIUS, COLORS, SCREEN_WIDTH, SCREEN_HEIGHT, ROUND_TIME, MASS_LOSS_TIME
 
-# Constants
-PORT = 5555
-BALL_RADIUS = 5
-START_RADIUS = 7
-ROUND_TIME = 60 * 5
-MASS_LOSS_TIME = 7
-W, H = 1600, 830
-COLORS = [
-    (255, 0, 0), (255, 128, 0), (255, 255, 0), (128, 255, 0),
-    (0, 255, 0), (0, 255, 128), (0, 255, 255), (0, 128, 255),
-    (0, 0, 255), (128, 0, 255), (255, 0, 255), (255, 0, 128),
-    (128, 128, 128), (0, 0, 0)
-]
+def get_network_ip():
+    try:
+        for interface in netifaces.interfaces():
+            # skip loopback
+            if interface == "lo0":
+                continue
+            addresses = netifaces.ifaddresses(interface)
+
+            # check IPV4 addresses
+            if netifaces.AF_INET in addresses:
+                ipv4_info = addresses[netifaces.AF_INET][0]
+                ip_address = ipv4_info['addr']
+
+                # Exclude loopback address
+                if not ip_address.startswith("127."):
+                    return ip_address
+    except Exception as e:
+        print(f'Error occured while fetching network: {e}')
+
+    # Fallback to loopback addr
+    return '127.0.0.1'
 
 # Server setup
 HOST_NAME = socket.gethostname()
-SERVER_IP = socket.gethostbyname(HOST_NAME)
+# SERVER_IP = socket.gethostbyname(HOST_NAME)
+SERVER_IP = get_network_ip()
+print(SERVER_IP)
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -68,7 +80,7 @@ def player_collision():
 
 def create_balls(n):
     while len(balls) < n:
-        x, y = random.randint(0, W), random.randint(0, H)
+        x, y = random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)
         if all(math.hypot(x - p["x"], y - p["y"]) > START_RADIUS + p["score"] for p in players.values()):
             balls.append((x, y, random.choice(COLORS)))
 
@@ -78,7 +90,7 @@ def reset_player(player_id):
 
 def get_safe_spawn():
     while True:
-        x, y = random.randint(0, W), random.randint(0, H)
+        x, y = random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT)
         if all(math.hypot(x - p["x"], y - p["y"]) > START_RADIUS + p["score"] for p in players.values()):
             return x, y
 

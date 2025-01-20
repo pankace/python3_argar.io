@@ -7,9 +7,13 @@ GAME_NAME = "Blobs"
 SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 830
 
+MASS_LOSS_TIME = 7
+ROUND_TIME = 60 * 5
+
 # Player Constants
 PLAYER_RADIUS = 10
 START_VELOCITY = 9
+START_RADIUS = 7
 
 # Ball Constants
 BALL_RADIUS = 5
@@ -30,3 +34,6 @@ SCORE_FONT = pygame.font.SysFont("comicsans", 26)
 
 # Window Position
 WINDOW_POSITION = (0, 30)
+
+# SEVER
+PORT = 5555
