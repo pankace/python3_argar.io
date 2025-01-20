@@ -1,8 +1,3 @@
-
-Here’s a simplified and more readable version of your README:
-
----
-
 # Python3 Agar.io
 
 ## 0. Team Contributions
