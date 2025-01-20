@@ -25,7 +25,7 @@ class NetworkUtils:
         except Exception as e:
             print(f"Error occurred while fetching network IP: {e}")
         # fallback address
-        return '127.0.0.1'
+        return socket.gethostbyname(socket.gethostname())
 
 class NetworkServer:
     def __init__(self):
