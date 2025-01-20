@@ -1,8 +1,9 @@
 import socket
 import pickle
+from network_server import NetworkUtils
 
 class NetworkClient:
-    def __init__(self, server="172.20.10.14", port=5555):
+    def __init__(self, server=NetworkUtils.get_network_ip(), port=5555):
         self.server = server
         self.port = port
         self.addr = (self.server, self.port)
