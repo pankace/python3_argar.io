@@ -1,106 +1,107 @@
 import contextlib
 with contextlib.redirect_stdout(None):
     import pygame
+
 import random
 import os
+from config import SCREEN_WIDTH, SCREEN_HEIGHT, TIME_FONT, SCORE_FONT, GAME_NAME, WINDOW_POSITION, START_VELOCITY
+from player import Player
+from ball import Ball
 from network_client import NetworkClient
 
-# Initialize Pygame
-pygame.font.init()
 
-# Constants
-PLAYER_RADIUS = 10
-START_VEL = 9
-BALL_RADIUS = 5
-W, H = 1600, 830
+class Game:
+    def __init__(self, player_name: str):
+        os.environ['SDL_VIDEO_WINDOW_POS'] = f"{WINDOW_POSITION[0]},{WINDOW_POSITION[1]}"
+        self.win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption(GAME_NAME)
 
-# Fonts
-NAME_FONT = pygame.font.SysFont("comicsans", 20)
-TIME_FONT = pygame.font.SysFont("comicsans", 30)
-SCORE_FONT = pygame.font.SysFont("comicsans", 26)
+        self.server = NetworkClient()
+        self.name = player_name
+        self.current_id = None
+        self.players: list[Player] = {}
+        self.balls: list[Ball] = []
+        self.game_time = 0
+        self.clock = pygame.time.Clock()
+        self.fps = 30
 
-# Colors
-COLORS = [
-    (255, 0, 0), (255, 128, 0), (255, 255, 0), (128, 255, 0),
-    (0, 255, 0), (0, 255, 128), (0, 255, 255), (0, 128, 255),
-    (0, 0, 255), (128, 0, 255), (255, 0, 255), (255, 0, 128),
-    (128, 128, 128), (0, 0, 0)
-]
+    @staticmethod
+    def convert_time(t):
+        if isinstance(t, str):
+            return t
+        minutes, seconds = divmod(int(t), 60)
+        return f"{minutes}:{seconds:02}" if minutes else f"{seconds}s"
 
-# Initialize Pygame window
-os.environ['SDL_VIDEO_WINDOW_POS'] = "0,30"
-WIN = pygame.display.set_mode((W, H))
-pygame.display.set_caption("Blobs")
+    def redraw_window(self):
+        self.win.fill((255, 255, 255))
 
-def convert_time(t):
-    if isinstance(t, str):
-        return t
-    minutes, seconds = divmod(int(t), 60)
-    return f"{minutes}:{seconds:02}" if minutes else f"{seconds}s"
+        # draw balls and players
+        for ball in self.balls:
+            ball.draw(self.win)
+        for player in self.players.values():
+            player.draw(self.win)
 
-def redraw_window(players, balls, game_time, score):
-    WIN.fill((255, 255, 255))
-    
-    for ball in balls:
-        pygame.draw.circle(WIN, ball[2], (ball[0], ball[1]), BALL_RADIUS)
+        title = TIME_FONT.render("Scoreboard", True, (0, 0, 0))
+        self.win.blit(title, (SCREEN_WIDTH - title.get_width() - 10, 5))
+        for count, player in enumerate(sorted(self.players.values(), key=lambda p: -p.score)[:3]):
+            text = SCORE_FONT.render(f"{count + 1}. {player.name}", True, (0, 0, 0))
+            self.win.blit(text, (SCREEN_WIDTH - title.get_width() - 10, 25 + count * 20))
 
-    for player_id in sorted(players, key=lambda x: players[x]["score"]):
-        p = players[player_id]
-        pygame.draw.circle(WIN, p["color"], (p["x"], p["y"]), PLAYER_RADIUS + round(p["score"]))
-        text = NAME_FONT.render(p["name"], True, (0, 0, 0))
-        WIN.blit(text, (p["x"] - text.get_width() / 2, p["y"] - text.get_height() / 2))
+        # Draw Timer and Current Player Score
+        current_player = self.players[self.current_id]
+        self.win.blit(TIME_FONT.render(f"Time: {self.convert_time(self.game_time)}", True, (0, 0, 0)), (10, 10))
+        self.win.blit(TIME_FONT.render(f"Score: {round(current_player.score)}", True, (0, 0, 0)), (10, 40))
 
-    title = TIME_FONT.render("Scoreboard", True, (0, 0, 0))
-    WIN.blit(title, (W - title.get_width() - 10, 5))
+        pygame.display.update()
 
-    for count, player_id in enumerate(sorted(players, key=lambda x: -players[x]["score"])[:3]):
-        text = SCORE_FONT.render(f"{count + 1}. {players[player_id]['name']}", True, (0, 0, 0))
-        WIN.blit(text, (W - title.get_width() - 10, 25 + count * 20))
+    def initialize_game(self):
+        self.current_id = self.server.connect(self.name)
+        balls_data, players_data, self.game_time = self.server.send("get")
+        self.balls = [Ball(ball[0], ball[1], ball[2]) for ball in balls_data]
+        self.players = {
+            pid: Player(pid, pdata["x"], pdata["y"], pdata["color"], pdata["score"], pdata["name"])
+            for pid, pdata in players_data.items()
+        }
 
-    WIN.blit(TIME_FONT.render(f"Time: {convert_time(game_time)}", True, (0, 0, 0)), (10, 10))
-    WIN.blit(TIME_FONT.render(f"Score: {round(score)}", True, (0, 0, 0)), (10, 40))
-    
-    pygame.display.update()
-
-def handle_movement(keys, player, vel):
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        player["x"] = max(player["x"] - vel, PLAYER_RADIUS + player["score"])
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        player["x"] = min(player["x"] + vel, W - PLAYER_RADIUS - player["score"])
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-        player["y"] = max(player["y"] - vel, PLAYER_RADIUS + player["score"])
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        player["y"] = min(player["y"] + vel, H - PLAYER_RADIUS - player["score"])
-
-def main(name):
-    server = NetworkClient()
-    current_id = server.connect(name)
-    balls, players, game_time = server.send("get")
-    clock = pygame.time.Clock()
-    run = True
-
-    while run:
-        clock.tick(30)
-        player = players[current_id]
-        vel = max(START_VEL - round(player["score"] / 14), 1)
+    def handle_movement(self):
+        current_player = self.players[self.current_id]
+        vel = max(START_VELOCITY - round(current_player.score / 14), 1)
         keys = pygame.key.get_pressed()
-        handle_movement(keys, player, vel)
-        balls, players, game_time = server.send(f"move {player['x']} {player['y']}")
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                run = False
-                
-        redraw_window(players, balls, game_time, player["score"])
+        current_player.move(keys, vel)
 
-    server.disconnect()
-    pygame.quit()
-    quit()
+    def update_game_state(self):
+        current_player = self.players[self.current_id]
 
-if __name__ == "__main__":
-    while True:
-        name = input("Please enter your name (1-19 characters): ")
-        if 1 <= len(name) <= 19:
-            break
-        print("Invalid name length. Try again.")
-    main(name)
+        # send player's pos to server
+        balls_data, players_data, self.game_time = self.server.send(
+            f"move {current_player.x} {current_player.y}"
+        )
+
+        # Update balls
+        self.balls = [Ball(ball[0], ball[1], ball[2]) for ball in balls_data]
+
+        # Update players
+        self.players = {
+            pid: Player(pid, pdata["x"], pdata["y"], pdata["color"], pdata["score"], pdata["name"])
+            for pid, pdata in players_data.items()
+        }
+
+    def run(self):
+        run = True
+        while run:
+            self.clock.tick(self.fps)
+            self.handle_movement()
+            self.update_game_state()
+            self.redraw_window()
+
+            # poll events
+            # Check for exit events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (
+                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+                ):
+                    run = False
+
+        self.server.disconnect()
+        pygame.quit()
+        quit()
