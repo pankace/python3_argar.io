@@ -1,6 +1,6 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from config import MAX_BYTES, BACKUP_COUNT
+from .config import MAX_BYTES, BACKUP_COUNT
 
 # Configure logging
 logger = logging.getLogger("client_logger")

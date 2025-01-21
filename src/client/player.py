@@ -4,7 +4,7 @@ from src.client.config import SCREEN_WIDTH, SCREEN_HEIGHT, PLAYER_RADIUS, NAME_F
 from pygame.surface import Surface
 from pygame.key import ScancodeWrapper
 from typing import Tuple, Optional
-from client_logger import logger as client_logger
+from .client_logger import logger as client_logger
 
 class Player:
     def __init__(

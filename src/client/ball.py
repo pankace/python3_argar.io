@@ -1,6 +1,6 @@
 import pygame
 
-from config import BALL_RADIUS
+from .config import BALL_RADIUS
 from pygame.surface import Surface
 from typing import Tuple
 

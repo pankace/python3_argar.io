@@ -4,10 +4,10 @@ with contextlib.redirect_stdout(None):
 
 import random
 import os
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, TIME_FONT, SCORE_FONT, GAME_NAME, WINDOW_POSITION, START_VELOCITY
-from player import Player
-from ball import Ball
-from network_client import NetworkClient
+from .config import SCREEN_WIDTH, SCREEN_HEIGHT, TIME_FONT, SCORE_FONT, GAME_NAME, WINDOW_POSITION, START_VELOCITY
+from .player import Player
+from .ball import Ball
+from .network_client import NetworkClient
 
 
 class Game:

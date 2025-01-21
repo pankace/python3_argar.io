@@ -1,6 +1,6 @@
 import netifaces # dynamic ip selections
 import socket
-from client_logger import logger
+from .client_logger import logger
 
 class NetworkUtils:
     @staticmethod
