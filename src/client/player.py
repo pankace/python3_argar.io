@@ -1,6 +1,6 @@
 import pygame
 
-from config import SCREEN_WIDTH, SCREEN_HEIGHT, PLAYER_RADIUS, NAME_FONT, START_VELOCITY
+from src.client.config import SCREEN_WIDTH, SCREEN_HEIGHT, PLAYER_RADIUS, NAME_FONT, START_VELOCITY
 from pygame.surface import Surface
 from pygame.key import ScancodeWrapper
 from typing import Tuple, Optional
