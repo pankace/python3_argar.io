@@ -6,16 +6,17 @@ from typing import Tuple, Optional
 from .client_logger import logger as client_logger
 from .config import SCREEN_WIDTH, SCREEN_HEIGHT, PLAYER_RADIUS, NAME_FONT
 
+
 class Player:
     def __init__(
-            self,
-            player_id: int,
-            x: int,
-            y: int,
-            color: Tuple[int, int, int],
-            score: float = 0,
-            name: Optional[str] = "Player"
-            ) -> None:
+        self,
+        player_id: int,
+        x: int,
+        y: int,
+        color: Tuple[int, int, int],
+        score: float = 0,
+        name: Optional[str] = "Player",
+    ) -> None:
         self.id = player_id
         self.x = x
         self.y = y
@@ -45,7 +46,9 @@ class Player:
         pygame.draw.circle(window, self.color, (self.x, self.y), self.radius)
         text = NAME_FONT.render(self.name, True, (0, 0, 0))
         # make a draw call
-        window.blit(text, (self.x - text.get_width() / 2, self.y - text.get_height() / 2))
+        window.blit(
+            text, (self.x - text.get_width() / 2, self.y - text.get_height() / 2)
+        )
 
     def to_dict(self) -> dict:
         return {

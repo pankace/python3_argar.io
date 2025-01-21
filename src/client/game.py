@@ -1,10 +1,19 @@
 import contextlib
+
 with contextlib.redirect_stdout(None):
     import pygame
 
 import random
 import os
-from .config import SCREEN_WIDTH, SCREEN_HEIGHT, TIME_FONT, SCORE_FONT, GAME_NAME, WINDOW_POSITION, START_VELOCITY
+from .config import (
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    TIME_FONT,
+    SCORE_FONT,
+    GAME_NAME,
+    WINDOW_POSITION,
+    START_VELOCITY,
+)
 from .player import Player
 from .ball import Ball
 from .network_client import NetworkClient
@@ -12,7 +21,9 @@ from .network_client import NetworkClient
 
 class Game:
     def __init__(self, player_name: str):
-        os.environ['SDL_VIDEO_WINDOW_POS'] = f"{WINDOW_POSITION[0]},{WINDOW_POSITION[1]}"
+        os.environ["SDL_VIDEO_WINDOW_POS"] = (
+            f"{WINDOW_POSITION[0]},{WINDOW_POSITION[1]}"
+        )
         self.win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption(GAME_NAME)
 
@@ -43,14 +54,26 @@ class Game:
 
         title = TIME_FONT.render("Scoreboard", True, (0, 0, 0))
         self.win.blit(title, (SCREEN_WIDTH - title.get_width() - 10, 5))
-        for count, player in enumerate(sorted(self.players.values(), key=lambda p: -p.score)[:3]):
+        for count, player in enumerate(
+            sorted(self.players.values(), key=lambda p: -p.score)[:3]
+        ):
             text = SCORE_FONT.render(f"{count + 1}. {player.name}", True, (0, 0, 0))
-            self.win.blit(text, (SCREEN_WIDTH - title.get_width() - 10, 25 + count * 20))
+            self.win.blit(
+                text, (SCREEN_WIDTH - title.get_width() - 10, 25 + count * 20)
+            )
 
         # Draw Timer and Current Player Score
         current_player = self.players[self.current_id]
-        self.win.blit(TIME_FONT.render(f"Time: {self.convert_time(self.game_time)}", True, (0, 0, 0)), (10, 10))
-        self.win.blit(TIME_FONT.render(f"Score: {round(current_player.score)}", True, (0, 0, 0)), (10, 40))
+        self.win.blit(
+            TIME_FONT.render(
+                f"Time: {self.convert_time(self.game_time)}", True, (0, 0, 0)
+            ),
+            (10, 10),
+        )
+        self.win.blit(
+            TIME_FONT.render(f"Score: {round(current_player.score)}", True, (0, 0, 0)),
+            (10, 40),
+        )
 
         pygame.display.update()
 
@@ -59,7 +82,14 @@ class Game:
         balls_data, players_data, self.game_time = self.server.send("get")
         self.balls = [Ball(ball[0], ball[1], ball[2]) for ball in balls_data]
         self.players = {
-            pid: Player(pid, pdata["x"], pdata["y"], pdata["color"], pdata["score"], pdata["name"])
+            pid: Player(
+                pid,
+                pdata["x"],
+                pdata["y"],
+                pdata["color"],
+                pdata["score"],
+                pdata["name"],
+            )
             for pid, pdata in players_data.items()
         }
 
@@ -82,7 +112,14 @@ class Game:
 
         # Update players
         self.players = {
-            pid: Player(pid, pdata["x"], pdata["y"], pdata["color"], pdata["score"], pdata["name"])
+            pid: Player(
+                pid,
+                pdata["x"],
+                pdata["y"],
+                pdata["color"],
+                pdata["score"],
+                pdata["name"],
+            )
             for pid, pdata in players_data.items()
         }
 

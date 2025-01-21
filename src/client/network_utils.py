@@ -1,6 +1,7 @@
-import netifaces # dynamic ip selections
+import netifaces  # dynamic ip selections
 import socket
 from .client_logger import logger
+
 
 class NetworkUtils:
     @staticmethod
@@ -14,7 +15,7 @@ class NetworkUtils:
                 # check ipv4
                 if netifaces.AF_INET in addresses:
                     ipv4_info = addresses[netifaces.AF_INET][0]
-                    ip_address = ipv4_info['addr']
+                    ip_address = ipv4_info["addr"]
                     if not ip_address.startswith("127."):
                         return ip_address
         except Exception as e:
