@@ -4,8 +4,9 @@ import pickle
 import time
 import random
 import math
-import netifaces # dynamic ip selection
+import netifaces # dynamic ip selections
 from config import PORT, START_RADIUS, COLORS, SCREEN_WIDTH, SCREEN_HEIGHT, ROUND_TIME, MASS_LOSS_TIME
+from server_logger import logger  
 
 class NetworkUtils:
     @staticmethod
@@ -24,6 +25,7 @@ class NetworkUtils:
                         return ip_address
         except Exception as e:
             print(f"Error occurred while fetching network IP: {e}")
+            logger.error(f"Error occurred while fetching network IP: {e}")
         # fallback address
         return socket.gethostbyname(socket.gethostname())
 
@@ -39,6 +41,7 @@ class NetworkServer:
         self.game_time = "Starting soon"
         self.server_ip = NetworkUtils.get_network_ip()
         self.server_socket = self._initialize_server()
+        logger.info(f"Server started on {self.server_ip}:{PORT} (Host: {socket.gethostname()})")
         print(f"[SERVER] Server started on {self.server_ip}:{PORT}\nHost: {socket.gethostname()}")
 
     def _initialize_server(self):
@@ -48,6 +51,7 @@ class NetworkServer:
                 server_socket.bind((self.server_ip, PORT))
                 server_socket.listen()
             except socket.error as e:
+                logger.error(f"Socket error: {e}")
                 print(f"[ERROR] {e}")
                 exit()
             return server_socket
@@ -72,6 +76,7 @@ class NetworkServer:
                 if math.hypot(p1["x"] - p2["x"], p1["y"] - p2["y"]) < p2["score"] - p1["score"] * 0.85:
                     p2["score"] = math.hypot(p2["score"], p1["score"])
                     self.reset_player(id1)
+                    logger.info(f"{p2['name']} ate {p1['name']}")
                     print(f"[GAME] {p2['name']} ate {p1['name']}")
 
     def create_balls(self, n):
@@ -94,6 +99,7 @@ class NetworkServer:
     def client_thread(self, conn, player_id):
         try:
             name = conn.recv(16).decode("utf-8")
+            logger.info(f"{name} joined the game.")
             print(f"[CONNECT] {name} joined.")
             spawn_x, spawn_y = self.get_safe_spawn()
             self.players[player_id] = {"x": spawn_x, "y": spawn_y, "color": COLORS[player_id % len(COLORS)], "score": 0, "name": name}
@@ -124,8 +130,10 @@ class NetworkServer:
                 conn.send(pickle.dumps((self.balls, self.players, elapsed)))
                 time.sleep(0.01)
         except Exception as e:
+            logger.error(f"Error in client thread: {e}")
             print(f"[ERROR] {e}")
         finally:
+            logger.info(f"{self.players[player_id]['name']} disconnected.")
             print(f"[DISCONNECT] {self.players[player_id]['name']} left.")
             self.connections -= 1
             self.players.pop(player_id, None)
@@ -133,14 +141,17 @@ class NetworkServer:
 
     def run(self):
         self.create_balls(random.randint(200, 250))
+        logger.info("Level initialized.")
         print("[GAME] Level initialized.")
 
         while True:
             conn, addr = self.server_socket.accept()
+            logger.info(f"Connection established from {addr}.")
             print(f"[CONNECTION] {addr} connected.")
             if addr[0] == self.server_ip and not self.start_game:
                 self.start_game = True
                 self.start_time = time.time()
+                logger.info("Game started.")
                 print("[START] Game started.")
             threading.Thread(target=self.client_thread, args=(conn, self.next_id)).start()
             self.connections += 1
