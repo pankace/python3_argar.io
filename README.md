@@ -28,7 +28,7 @@ This is a Python-based multiplayer server for a game inspired by **Agar.io**. In
 2. **Run the Server**: Start the server by running the `network_server.py` file:
    
    ```bash
-   python .\network_server.py
+   python .\server.py
    ```
 
 3. **Run the Game**: Each player on the local network needs to run the `app.py` file on their own computer:

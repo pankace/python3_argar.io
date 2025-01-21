@@ -2,9 +2,14 @@ name: Python application
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: 
+      - "main"
+      - "dev"
   pull_request:
-    branches: [ "dev" ]
+    branches: 
+      - "main"
+      - "dev"
+
 
 permissions:
   contents: read
@@ -41,4 +46,15 @@ jobs:
 
     - name: Test client interaction
       run: |
-        python app.py
+        echo "DefaultName" | python app.py &
+        echo $! > app_pid.txt
+
+    - name: Wait for the application to run
+      run: |
+        sleep 10 # Adjust time as needed
+
+    - name: Kill the application
+      run: |
+        if [ -f app_pid.txt ]; then
+          kill $(cat app_pid.txt) || true
+        fi
