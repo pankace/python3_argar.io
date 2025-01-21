@@ -41,4 +41,4 @@ jobs:
 
     - name: Test client interaction
       run: |
-        python client.py
+        python app.py
