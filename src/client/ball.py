@@ -13,3 +13,4 @@ class Ball:
 
     def draw(self, window: Surface) -> None:
         pygame.draw.circle(window, self.color, (self.x, self.y), BALL_RADIUS)
+
