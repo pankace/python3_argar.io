@@ -41,4 +41,4 @@ jobs:
 
     - name: Test client interaction
       run: |
-        python app.py
+        echo "DefaultName" | python app.py
