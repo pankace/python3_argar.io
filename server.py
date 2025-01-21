@@ -1,5 +1,5 @@
-from src.server.network_server import NetworkServer
+from src.server import network_server
 
 if __name__ == "__main__":
-    server = NetworkServer()
+    server = network_server.NetworkServer()
     server.run()

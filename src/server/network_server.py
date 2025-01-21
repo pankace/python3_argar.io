@@ -4,9 +4,9 @@ import pickle
 import time
 import random
 import math
-from config import PORT, START_RADIUS, COLORS, SCREEN_WIDTH, SCREEN_HEIGHT, ROUND_TIME, MASS_LOSS_TIME
-from network_utils import NetworkUtils
-from server_logger import logger  
+from src.server.config import PORT, START_RADIUS, COLORS, SCREEN_WIDTH, SCREEN_HEIGHT, ROUND_TIME, MASS_LOSS_TIME
+from src.server.network_utils import NetworkUtils
+from src.server.server_logger import logger  
 
 class NetworkServer:
     def __init__(self):

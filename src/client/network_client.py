@@ -1,6 +1,6 @@
 import socket
 import pickle
-from network_server import NetworkUtils
+from network_utils import NetworkUtils
 
 class NetworkClient:
     def __init__(self, server=NetworkUtils.get_network_ip(), port=5555):
