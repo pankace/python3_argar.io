@@ -1,6 +1,7 @@
 import socket
 import pickle
 from .network_utils import NetworkUtils
+from .client_logger import logger
 
 
 class NetworkClient:
@@ -21,6 +22,7 @@ class NetworkClient:
             return int(val.decode())
         except (socket.error, ValueError) as e:
             print(f"Connection error: {e}")
+            logger.error(f"Connection error: {e}")
             return None
 
     def disconnect(self):
@@ -37,4 +39,5 @@ class NetworkClient:
                 return reply.decode(errors="ignore")
         except socket.error as e:
             print(f"Send error: {e}")
+            logger.error(f"Send error: {e}")
             return None
