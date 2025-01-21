@@ -4,6 +4,7 @@ from config import SCREEN_WIDTH, SCREEN_HEIGHT, PLAYER_RADIUS, NAME_FONT, START_
 from pygame.surface import Surface
 from pygame.key import ScancodeWrapper
 from typing import Tuple, Optional
+from client_logger import logger as client_logger
 
 class Player:
     def __init__(
@@ -28,12 +29,16 @@ class Player:
 
     def move(self, keys: ScancodeWrapper, vel: int) -> None:
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            client_logger.debug(f"Player {self.name} moved left")
             self.x = max(self.x - vel, self.radius)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            client_logger.debug(f"Player {self.name} moved right")
             self.x = min(self.x + vel, SCREEN_WIDTH - self.radius)
         if keys[pygame.K_UP] or keys[pygame.K_w]:
+            client_logger.debug(f"Player {self.name} moved up")
             self.y = max(self.y - vel, self.radius)
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            client_logger.debug(f"Player {self.name} moved down")
             self.y = min(self.y + vel, SCREEN_HEIGHT - self.radius)
 
     def draw(self, window: Surface) -> None:
